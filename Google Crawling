@@ -1,0 +1,97 @@
+import requests
+from bs4 import BeautifulSoup
+from PIL import Image
+from io import BytesIO
+import matplotlib.pyplot as plt
+
+def get_zodiac_sign(birth_month, birth_day):
+    if (birth_month == 1 and birth_day >= 20) or (birth_month == 2 and birth_day <= 18):
+        return "물병자리", "독창적이고 진보적인 성격을 상징하는 별자리입니다."
+    elif (birth_month == 2 and birth_day >= 19) or (birth_month == 3 and birth_day <= 20):
+        return "물고기자리", "감수성이 풍부하고 상상력이 뛰어난 성격을 상징하는 별자리입니다."
+    elif (birth_month == 3 and birth_day >= 21) or (birth_month == 4 and birth_day <= 19):
+        return "양자리", "리더십과 열정을 상징하는 별자리입니다."
+    elif (birth_month == 4 and birth_day >= 20) or (birth_month == 5 and birth_day <= 20):
+        return "황소자리", "안정적이고 신뢰할 수 있는 성격을 상징하는 별자리입니다."
+    elif (birth_month == 5 and birth_day >= 21) or (birth_month == 6 and birth_day <= 20):
+        return "쌍둥이자리", "호기심 많고 사교적인 성격을 상징하는 별자리입니다."
+    elif (birth_month == 6 and birth_day >= 21) or (birth_month == 7 and birth_day <= 22):
+        return "게자리", "감정적이고 배려심이 깊은 성격을 상징하는 별자리입니다."
+    elif (birth_month == 7 and birth_day >= 23) or (birth_month == 8 and birth_day <= 22):
+        return "사자자리", "자신감과 리더십을 상징하는 별자리입니다."
+    elif (birth_month == 8 and birth_day >= 23) or (birth_month == 9 and birth_day <= 22):
+        return "처녀자리", "현실적이고 꼼꼼한 성격을 상징하는 별자리입니다."
+    elif (birth_month == 9 and birth_day >= 23) or (birth_month == 10 and birth_day <= 22):
+        return "천칭자리", "균형감각과 조화를 중요시하는 성격을 상징하는 별자리입니다."
+    elif (birth_month == 10 and birth_day >= 23) or (birth_month == 11 and birth_day <= 21):
+        return "전갈자리", "강한 직관력과 열정을 상징하는 별자리입니다."
+    elif (birth_month == 11 and birth_day >= 22) or (birth_month == 12 and birth_day <= 21):
+        return "사수자리", "자유로운 영혼과 탐구심을 상징하는 별자리입니다."
+    elif (birth_month == 12 and birth_day >= 22) or (birth_month == 1 and birth_day <= 19):
+        return "염소자리", "책임감과 신중함을 상징하는 별자리입니다."
+
+    else:
+        return None, "해당하는 별자리가 없습니다."
+
+zodiac_data = {
+    "염소자리": {"잘 맞는 궁합": ["처녀자리", "황소자리", "염소자리"], "잘 맞지 않는 궁합": ["양자리", "게자리", "천칭자리"]},
+    "물병자리": {"잘 맞는 궁합": ["쌍둥이자리", "물병자리", "천칭자리"], "잘 맞지 않는 궁합": ["황소자리", "사자자리", "전갈자리"]},
+    "물고기자리": {"잘 맞는 궁합": ["게자리", "전갈자리", "물고기자리"], "잘 맞지 않는 궁합": ["쌍둥이자리", "처녀자리", "사수자리"]},
+    "양자리": {"잘 맞는 궁합": ["사자자리", "사수자리"], "잘 맞지 않는 궁합": ["염소자리", "천칭자리", "게자리"]},
+    "황소자리": {"잘 맞는 궁합": ["염소자리", "처녀자리", "황소자리"], "잘 맞지 않는 궁합": ["사자자리", "전갈자리", "물병자리"]},
+    "쌍둥이자리": {"잘 맞는 궁합": ["물병자리", "천칭자리", "쌍둥이자리"], "잘 맞지 않는 궁합": ["처녀자리", "사수자리", "물고기자리"]},
+    "게자리": {"잘 맞는 궁합": ["물고기자리", "전갈자리", "게자리"], "잘 맞지 않는 궁합": ["천칭자리", "염소자리", "양자리"]},
+    "사자자리": {"잘 맞는 궁합": ["양자리", "사수자리", "사자자리"], "잘 맞지 않는 궁합": ["전갈자리", "물병자리", "황소자리"]},
+    "처녀자리": {"잘 맞는 궁합": ["황소자리", "염소자리", "처녀자리"], "잘 맞지 않는 궁합": ["사수자리", "쌍둥이자리", "물고기자리"]},
+    "천칭자리": {"잘 맞는 궁합": ["물병자리", "쌍둥이자리", "천칭자리"], "잘 맞지 않는 궁합": ["염소자리", "양자리", "게자리"]},
+    "전갈자리": {"잘 맞는 궁합": ["물고기자리", "게자리", "전갈자리"], "잘 맞지 않는 궁합": ["사자자리", "쌍둥이자리", "황소자리"]},
+    "사수자리": {"잘 맞는 궁합": ["양자리", "사자자리", "사수자리"], "잘 맞지 않는 궁합": ["물고기자리", "쌍둥이자리", "처녀자리"]},
+}
+
+def download_zodiac_images(zodiac_name):
+    search_url = f"https://www.google.com/search?q={zodiac_name}+별자리&tbm=isch"
+    response = requests.get(search_url)
+    soup = BeautifulSoup(response.text, 'html.parser')
+
+    images = []
+    for img in soup.find_all('img', limit=3):
+        img_url = img.get('data-src', img.get('src'))
+
+        if not img_url.startswith('http'):
+            img_url = 'https://www.google.com' + img_url
+
+        img_data = requests.get(img_url).content
+        images.append(Image.open(BytesIO(img_data)))
+
+    return images
+
+def show_images(images):
+    for i, img in enumerate(images):
+        plt.subplot(1, 3, i + 1)
+        plt.imshow(img)
+        plt.axis('off')
+    plt.show()
+
+birth_month = int(input("태어난 월을 입력하세요 (1~12): "))
+birth_day = int(input("태어난 일을 입력하세요 (1~31): "))
+
+zodiac_name, zodiac_desc = get_zodiac_sign(birth_month, birth_day)
+if zodiac_name:
+    print(f"당신의 별자리는 {zodiac_name}입니다. {zodiac_desc}")
+
+    answer = input("잘 맞는 궁합과 잘 맞지 않는 궁합을 알고 싶으신가요? (예/아니오): ")
+
+    if answer.strip().lower() == "예":
+        good_compatibility = zodiac_data[zodiac_name]["잘 맞는 궁합"]
+        bad_compatibility = zodiac_data[zodiac_name]["잘 맞지 않는 궁합"]
+
+        print(f"잘 맞는 궁합: {', '.join(good_compatibility)}")
+        print(f"잘 맞지 않는 궁합: {', '.join(bad_compatibility)}")
+else:
+    print("올바른 생년월일을 입력해 주세요.")
+
+if zodiac_name != "별자리 없음":
+    images = download_zodiac_images(zodiac_name)
+    show_images(images)
+
+print("Google에서 찾은 당신의 별자리 이미지 입니다. 더 많은 이미지는 Google 검색을 통해 알아보십시오.")
